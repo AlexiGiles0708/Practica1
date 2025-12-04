@@ -122,7 +122,10 @@ public class cliente {
                         cantidad = Integer.parseInt(cantStr.trim());
                         if (cantidad <= 0) {
                             System.out.println("La cantidad debe ser mayor que 0.");
-                        } else {
+                        }else if(cantidad > producto.stock){
+                            System.out.println("No hay stock");
+                        }
+                        else {
                             cantidadValida = true;
                         }
                     } catch (NumberFormatException e) {

@@ -119,8 +119,8 @@ public class servidor {
                     for (Map.Entry<Integer, Integer> e : carrito.entrySet()) {
                     int id = e.getKey();
                     int cantidad = e.getValue();
-                    double precioUnit = 0;   // deberías recuperarlo de BD
-                    String nombre = "Prod " + id; // idem
+                    double precioUnit = 0; 
+                    String nombre = "Prod " + id; 
                     double subtotal = cantidad * precioUnit;
                     total += subtotal;
 
