@@ -8,13 +8,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class servidor {
-    private static final String DB_URL = "jdbc:sqlserver://localhost:1434;databaseName=Compras;encrypt=false;trustServerCertificate=true";
+    private static final String DB_URL = "jdbc:sqlserver://localhost:1435;databaseName=Compras;encrypt=false;trustServerCertificate=true";
     private static final String DB_USER = "sa"; 
-    private static final String DB_PASSWORD = "MiContrasena123!'"; 
+    private static final String DB_PASSWORD = "MiContrasena123!"; 
 
     public static void main(String[] args) {
         try {
-            ServerSocket s = new ServerSocket(1234);
+            ServerSocket s = new ServerSocket(6040);
             System.out.println("Server esperando al cliente: ");
             for (;;){
                 Socket cl = s.accept();
@@ -26,7 +26,7 @@ public class servidor {
                 enviarProductos(out);
                 
                 System.out.println("Productos enviados al cliente");
-                System.out.println(in.readLine());
+                
                 procesarCompra(in, out);
                 out.close();
                 in.close();
@@ -43,7 +43,7 @@ public class servidor {
             Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("EXEC ObtenerProductosDisponibles");
+            ResultSet rs = stmt.executeQuery("EXEC ObtenerProductosDisponibles ");
             
             out.println("INICIO_PRODUCTOS");
             
@@ -161,6 +161,7 @@ public class servidor {
                 out.println(l);
             }
             out.println("FIN_TICKET");
+            enviarProductos(out);
 
         } catch (SQLException e) {
             conn.rollback();
@@ -182,8 +183,6 @@ public class servidor {
         out.println("ERROR_COMPRA|Driver SQL Server no encontrado.");
     }
 }
-
-
     
     private static String leerImagenComoBase64(String rutaImagen) {
         try {

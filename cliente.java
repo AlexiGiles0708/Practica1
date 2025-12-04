@@ -306,6 +306,8 @@ public class cliente {
     }
     System.out.println("============================\n");
     carrito.clear();
+
+    recibirProductos(in);
 }
 
     
