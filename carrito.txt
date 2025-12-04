@@ -1,0 +1,29 @@
+=== CARRITO DE COMPRAS ===
+Fecha: Wed Dec 03 23:52:14 CST 2025
+
+PRODUCTO 1:
+ID: 1
+Nombre: Audífonos Bluetooth Sony WH-CH520
+Precio: $1299.0
+Stock disponible: 25
+Imagen guardada como: producto_1_carrito.jpg
+----------------------------------------
+
+PRODUCTO 2:
+ID: 2
+Nombre: Mouse Inalámbrico Logitech M185
+Precio: $249.0
+Stock disponible: 3
+Imagen guardada como: producto_2_carrito.jpg
+----------------------------------------
+
+PRODUCTO 3:
+ID: 3
+Nombre: Smartwatch Amazfit Bip U Pro
+Precio: $1499.0
+Stock disponible: 18
+Imagen guardada como: producto_3_carrito.jpg
+----------------------------------------
+
+TOTAL DEL CARRITO: $3047,00
+Número de productos: 3
