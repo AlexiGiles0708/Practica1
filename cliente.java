@@ -72,11 +72,15 @@ public class cliente {
                         break;
                     case 4:
                         System.out.println("Saliendo...");
+                        
+                        out.println("Cliente desconectado");
+                        out.flush();
                         break;
                     default:
                         System.out.println("Opcion no valida. Intenta de nuevo.");
                 }
             } while (opcion != 4);
+
             
             out.close();
             in.close();
@@ -234,7 +238,7 @@ public class cliente {
             
             Files.deleteIfExists(Paths.get("carrito.txt"));
             
-            // Eliminar imágenes del carrito
+            
             for (Producto producto : carrito) {
                 String nombreImagen = "producto_" + producto.id + "_carrito.jpg";
                 Files.deleteIfExists(Paths.get(nombreImagen));
@@ -244,7 +248,7 @@ public class cliente {
             carrito.clear();
             productosDisponibles.clear();
             
-            System.out.println("✓ Carrito y archivos temporales eliminados");
+            
             
         } catch (Exception e) {
             System.out.println("Error al limpiar archivos: " + e.getMessage());

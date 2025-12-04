@@ -24,6 +24,7 @@ public class servidor {
                 enviarProductos(out);
                 
                 System.out.println("Productos enviados al cliente");
+                System.out.println(in.readLine());
                 
                 out.close();
                 in.close();
