@@ -78,6 +78,7 @@ public class servidor {
     Map<Integer, Integer> carrito = new LinkedHashMap<>();
     try {
         String linea;
+        // 1) Recibir líneas: id|cantidad hasta FIN_COMPRA
         while ((linea = in.readLine()) != null) {
             if ("FIN_COMPRA".equals(linea)) break;
             if (linea.trim().isEmpty()) continue;
@@ -101,6 +102,7 @@ public class servidor {
             return;
         }
 
+        // 2) Conexión a BD
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
         conn.setAutoCommit(false);
@@ -111,33 +113,56 @@ public class servidor {
         ticket.append(String.format("%-5s %-25s %-10s %-10s %-10s%n",
                 "ID", "Producto", "Cant", "P.Unit", "Subtotal"));
 
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("EXEC restarStockProducto");
+        // Para obtener datos del producto por ID
+        String sqlProducto = "SELECT nombre, precio, stock FROM Productos WHERE id = ? AND estado_id IN (1,2)";
 
-            if(rs.next()){
-                    for (Map.Entry<Integer, Integer> e : carrito.entrySet()) {
-                    int id = e.getKey();
-                    int cantidad = e.getValue();
-                    double precioUnit = 0; 
-                    String nombre = "Prod " + id; 
+        try (PreparedStatement psProducto = conn.prepareStatement(sqlProducto)) {
+
+            for (Map.Entry<Integer, Integer> e : carrito.entrySet()) {
+                int id = e.getKey();
+                int cantidad = e.getValue();
+
+                // 3) Consultar datos del producto
+                psProducto.setInt(1, id);
+                try (ResultSet rs = psProducto.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        out.println("ERROR_COMPRA|Producto con ID " + id + " no existe o no está disponible.");
+                        return;
+                    }
+
+                    String nombre = rs.getString("nombre");
+                    double precioUnit = rs.getDouble("precio");
+                    int stockActual = rs.getInt("stock");
+
+                    // 4) Llamar al SP restarStockProducto @producto, @cantidad
+                    try (CallableStatement cs = conn.prepareCall("{ call restarStockProducto(?, ?) }")) {
+                        cs.setString(1, nombre);   // @producto
+                        cs.setInt(2, cantidad);    // @cantidad
+                        cs.execute();
+                    }
+
+                    // 5) Calcular subtotal y armar ticket
                     double subtotal = cantidad * precioUnit;
                     total += subtotal;
 
                     ticket.append(String.format("%-5d %-25s %-10d %-10.2f %-10.2f%n",
                             id, nombre, cantidad, precioUnit, subtotal));
                 }
-                ticket.append(String.format("%nTOTAL: %.2f%n", total));
-                conn.commit();
-                out.println("OK_COMPRA");
-                out.println("TICKET");
-                for (String l : ticket.toString().split("\\n")) {
-                    out.println(l);
-                }
-                out.println("FIN_TICKET");
             }
 
-        } catch (Exception e) {
+            ticket.append(String.format("%nTOTAL: %.2f%n", total));
+            conn.commit();
+
+            // 6) Enviar ticket al cliente
+            out.println("OK_COMPRA");
+            out.println("TICKET");
+            for (String l : ticket.toString().split("\\n")) {
+                out.println(l);
+            }
+            out.println("FIN_TICKET");
+
+        } catch (SQLException e) {
             conn.rollback();
             System.out.println("Error durante la compra, rollback: " + e.getMessage());
             out.println("ERROR_COMPRA|Error durante la compra: " + e.getMessage());
@@ -157,6 +182,7 @@ public class servidor {
         out.println("ERROR_COMPRA|Driver SQL Server no encontrado.");
     }
 }
+
 
     
     private static String leerImagenComoBase64(String rutaImagen) {
