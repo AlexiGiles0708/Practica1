@@ -67,7 +67,7 @@ public class cliente {
                         mostrarCarrito();
                         break;
                     case 3:
-                        // Lógica para realizar compra
+                        
                         System.out.println("Realizando compra...");
                         break;
                     case 4:
@@ -83,6 +83,7 @@ public class cliente {
             s.close();
             
             System.out.println("Desconectado del servidor");
+            limpiarArchivosTemporales();
         } catch(Exception e) {
             System.out.println("Error al conectar con el servidor: " + e.getMessage());
         }
@@ -90,7 +91,7 @@ public class cliente {
     
     private static void agregarProductosAlCarrito(Scanner scanner) {
         System.out.println("Ingresa los IDs de los productos a agregar (separados por comas, ej: 1,2,3): ");
-        scanner.nextLine(); // Limpiar buffer
+        scanner.nextLine(); 
         String entrada = scanner.nextLine();
         
         String[] idsString = entrada.split(",");
@@ -225,6 +226,28 @@ public class cliente {
             }
         } catch (Exception e) {
             System.out.println("Error al recibir productos: " + e.getMessage());
+        }
+    }
+
+    private static void limpiarArchivosTemporales() {
+        try {
+            
+            Files.deleteIfExists(Paths.get("carrito.txt"));
+            
+            // Eliminar imágenes del carrito
+            for (Producto producto : carrito) {
+                String nombreImagen = "producto_" + producto.id + "_carrito.jpg";
+                Files.deleteIfExists(Paths.get(nombreImagen));
+            }
+            
+           
+            carrito.clear();
+            productosDisponibles.clear();
+            
+            System.out.println("✓ Carrito y archivos temporales eliminados");
+            
+        } catch (Exception e) {
+            System.out.println("Error al limpiar archivos: " + e.getMessage());
         }
     }
 }
