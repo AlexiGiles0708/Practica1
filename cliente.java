@@ -15,7 +15,7 @@ class Producto {
     int stock;
     int estadoId;
     String imagenBase64;
-    
+    int cantidad;
     public Producto(int id, String nombre, double precio, int stock, int estadoId, String imagenBase64) {
         this.id = id;
         this.nombre = nombre;
@@ -23,7 +23,15 @@ class Producto {
         this.stock = stock;
         this.estadoId = estadoId;
         this.imagenBase64 = imagenBase64;
+        
     }
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
+    public int getCantidad() {
+        return cantidad;
+    }
+
 }
 
 public class cliente {
@@ -96,32 +104,47 @@ public class cliente {
     }
     
     private static void agregarProductosAlCarrito(Scanner scanner) {
-        System.out.println("Ingresa los IDs de los productos a agregar (separados por comas, ej: 1,2,3): ");
-        scanner.nextLine(); 
-        String entrada = scanner.nextLine();
-        
-        String[] idsString = entrada.split(",");
-        
-        for (String idStr : idsString) {
-            try {
-                int id = Integer.parseInt(idStr.trim());
-                Producto producto = buscarProductoPorId(id);
-                
-                if (producto != null) {
-                    carrito.add(producto);
-                    System.out.println("Producto agregado: " + producto.nombre);
-                } else {
-                    System.out.println("Producto con ID " + id + " no encontrado.");
+    System.out.println("Ingresa los IDs de los productos a agregar (separados por comas, ej: 1,2,3): ");
+    scanner.nextLine(); // limpia el salto de línea pendiente (si vienes de un nextInt)
+    String entrada = scanner.nextLine();
+    String[] idsString = entrada.split(",");
+    for (String idStr : idsString) {
+        try {
+            int id = Integer.parseInt(idStr.trim());
+            Producto producto = buscarProductoPorId(id);
+            if (producto != null) {
+                int cantidad = 0;
+                boolean cantidadValida = false;
+                while (!cantidadValida) {
+                    System.out.print("Ingresa la cantidad a comprar del producto '"  + producto.nombre + "' (ID " + id + "): ");
+                    String cantStr = scanner.nextLine();
+                    try {
+                        cantidad = Integer.parseInt(cantStr.trim());
+                        if (cantidad <= 0) {
+                            System.out.println("La cantidad debe ser mayor que 0.");
+                        } else {
+                            cantidadValida = true;
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Cantidad inválida, intenta de nuevo.");
+                    }
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("ID inválido: " + idStr);
+                producto.setCantidad(cantidad);
+                carrito.add(producto);
+                System.out.println("Producto agregado: " + producto.nombre + " x" + cantidad);
+            } else {
+                System.out.println("Producto con ID " + id + " no encontrado.");
             }
+        } catch (NumberFormatException e) {
+            System.out.println("ID inválido: " + idStr);
         }
-        
-        // Guardar carrito en archivo
-        guardarCarritoEnArchivo();
-        System.out.println("Carrito actualizado y guardado en 'carrito.txt'");
     }
+
+    // Guardar carrito en archivo
+    guardarCarritoEnArchivo();
+    System.out.println("Carrito actualizado y guardado en 'carrito.txt'");
+}
+
     
     private static Producto buscarProductoPorId(int id) {
         for (Producto producto : productosDisponibles) {
@@ -168,7 +191,7 @@ public class cliente {
                 contenido.append("Nombre: ").append(producto.nombre).append("\n");
                 contenido.append("Precio: $").append(producto.precio).append("\n");
                 contenido.append("Stock disponible: ").append(producto.stock).append("\n");
-                
+                contenido.append("Cantidad a comprar: ").append(producto.getCantidad()).append("\n");
                 // Guardar imagen como archivo separado
                 if (!"NO_IMAGE".equals(producto.imagenBase64)) {
                     String nombreImagen = "producto_" + producto.id + "_carrito.jpg";
@@ -242,10 +265,9 @@ public class cliente {
         return;
     }
 
-    // Enviar cada producto como: id|cantidad
     for (Producto p : carrito) {
         int id = p.id;
-        int cantidad = 1; // o podrías pedir la cantidad al usuario
+        int cantidad = p.getCantidad();
         out.println(id + "|" + cantidad);
     }
     out.println("FIN_COMPRA");
