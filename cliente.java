@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
@@ -69,6 +70,7 @@ public class cliente {
                     case 3:
                         
                         System.out.println("Realizando compra...");
+                        compraCarrito(out, in);
                         break;
                     case 4:
                         System.out.println("Saliendo...");
@@ -232,7 +234,56 @@ public class cliente {
             System.out.println("Error al recibir productos: " + e.getMessage());
         }
     }
+    
+    private static void compraCarrito(PrintWriter out, BufferedReader in) throws IOException {
+    System.out.println("COMPRA");
+    if (carrito.isEmpty()) {
+        System.out.println("El carrito está vacío.");
+        return;
+    }
 
+    // Enviar cada producto como: id|cantidad
+    for (Producto p : carrito) {
+        int id = p.id;
+        int cantidad = 1; // o podrías pedir la cantidad al usuario
+        out.println(id + "|" + cantidad);
+    }
+    out.println("FIN_COMPRA");
+    out.flush();
+
+    String respuesta = in.readLine();
+    if (respuesta == null) {
+        System.out.println("No se recibió respuesta del servidor.");
+        return;
+    }
+
+    if (respuesta.startsWith("ERROR_COMPRA")) {
+        String[] partes = respuesta.split("\\|", 2);
+        String mensaje = (partes.length == 2) ? partes[1] : "Error desconocido.";
+        System.out.println("La compra NO se realizó: " + mensaje);
+        return;
+    }
+
+    if (!"OK_COMPRA".equals(respuesta)) {
+        System.out.println("Respuesta inesperada del servidor: " + respuesta);
+        return;
+    }
+
+    String line = in.readLine();
+    if (!"TICKET".equals(line)) {
+        System.out.println("No se recibió el ticket de compra.");
+        return;
+    }
+
+    System.out.println("\n===== TICKET DE COMPRA =====");
+    while ((line = in.readLine()) != null && !"FIN_TICKET".equals(line)) {
+        System.out.println(line);
+    }
+    System.out.println("============================\n");
+    carrito.clear();
+}
+
+    
     private static void limpiarArchivosTemporales() {
         try {
             
@@ -244,7 +295,6 @@ public class cliente {
                 Files.deleteIfExists(Paths.get(nombreImagen));
             }
             
-           
             carrito.clear();
             productosDisponibles.clear();
             
